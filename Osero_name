@@ -1,0 +1,28 @@
+<?
+ 
+// ゲーム開始の準備をするクラス
+class start{
+    
+//コンストラクタ
+protected $name;
+public function __construct() {
+    $this->name = array();
+}
+ 
+public function board($a){
+    //名前を入れる
+    array_push($this->name,$a);
+}
+ 
+public function say(){
+    $r = count($this->name);
+    for($i=0 ; $i <= $r-1; ++$i){
+    echo $this->name[$i].' : '."\n";
+    }
+}
+}
+ 
+$play = new start();
+$play->board('alice');
+$play->board('bov');
+$play->say();
