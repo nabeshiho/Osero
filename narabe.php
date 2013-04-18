@@ -1,8 +1,8 @@
 <?php
 class setting{
-protected $kaisuu;
-protected $stone;
-protected $flag;
+protected $kaisuu;	//ターン
+protected $stone;	//盤を構成する配列
+protected $flag;	//ゲーム終了フラグ
 
 public function __construct() {
 	$this->flag =false;
@@ -10,6 +10,7 @@ public function __construct() {
     $this->stone = array();
 }
 
+//名前を入力
 function name(){
 	echo "\n".'1人目の名前を入力して下さい。';
 	echo "\n".'名前：';
@@ -21,13 +22,18 @@ function name(){
 
 	echo "\n".'先手(黒●):'.$input_name1."\n".'後手(白○):'.$input_name2;
 	echo "\n\n".'ゲームを開始します。'."\n";
+	
+	$this->f();
 }
 
+//初期設定
 function f(){
+$this->flag =false;
 $suu=0;
 for($n_x = 0; $n_x <= 7; ++$n_x){
   for($n_y = 0; $n_y <= 7; ++$n_y){
-	if($n_x===3 and $n_y===3){
+	
+	if     ($n_x===3 and $n_y===3){
 		$this->stone[$suu]=0;
 	
 	}elseif($n_x===4 and $n_y===4){
@@ -46,8 +52,10 @@ for($n_x = 0; $n_x <= 7; ++$n_x){
   	}
   }
    echo '0～7までの数字を「縦,横」の順に入力して下さい。'."\n";
+   $this->set();
 }
 
+//盤に石をセットする
 function set(){
 	echo '0 1 2 3 4 5 6 7 '."\n";
 	for($a=0; $a <= 63; ++$a){
@@ -73,7 +81,8 @@ function set(){
     	$this->play_game();
    	}
 }
-   
+
+//ゲームをする
 function play_game(){
 	$p = ($this->kaisuu -1) % 2;
 	if($p===0){
@@ -81,7 +90,7 @@ function play_game(){
 	}else{
 		$p_ms = '白';
 	}
-	echo "\n".$p_ms.'の番です。'."\n";
+	echo "\n".$this->kaisuu.' : '.$p_ms.'の番です。'."\n";
 	
     echo "\n".'縦 : ';
 	$input_x = trim(fgets(STDIN));
@@ -106,6 +115,7 @@ function play_game(){
 				echo '1枚以上相手の石を裏返せる場所に打ってください。'."\n";
 				$this->set();
 	        }else{
+	        	// 裏返しの処理へ
 		    	$this->turn($input_x,$input_y,$answer);
 			}
 		}
@@ -123,15 +133,17 @@ function play_game(){
 	// 裏返し
 	function re_stone($x,$y,$player){
 	$this->kaisuu = $this->kaisuu + 1;
-    for ($d = -1; $d <= 1; $d++) {      /* 上下方向 */
-        for ($e = -1; $e <= 1; $e++) {  /* 左右方向 */
+    for ($d = -1; $d <= 1; ++$d) {      // 上下方向
+        for ($e = -1; $e <= 1; ++$e) {  // 左右方向
             if ($d == 0 && $e == 0) continue; 
             $count = $this->re_suu($player, $x, $y, $d, $e);
             for ($i = 1; $i <= $count; $i++) {
             	$n_x = $x+$i*$d;
             	$n_y = $y+$i*$e;
             	$n_s = $n_x+($n_y*8);
-                $this->stone[$n_s] = $player; /* 裏返す */
+            	if($this->re_wall($n_x,$n_y)===true){
+                $this->stone[$n_s] = $player; // 裏返す
+                }
             }
         }
     }
@@ -146,15 +158,17 @@ function play_game(){
 		$aite = 0;
 	 }
 	
-    for($k = 1; $this->stone[($x+$k*$d)+(($y+$k*$e)*8)] === $aite; ++$k) {
-    };        
+	if($this->re_wall($x,$y)===true){
+    for($k =1; $this->stone[($x+($k*$d))+(($y+($k*$e))*8)] === $aite; ++$k) {
+    };
     
-    if ($this->stone[($x+$k*$d)+(($y+$k*$e)*8)] === $player) {                             
-        return $k-1;   
+    if ($this->stone[($x+($k*$d))+(($y+($k*$e))*8)] === $player) {                             
+        return $k-1;
     } else {
-        return 0;   
+        return 0;
     }
     }
+   	}
 		
 	// 裏返し 壁判定
 	function re_wall($x,$y){
@@ -167,9 +181,9 @@ function play_game(){
 	
 	//石を打って良いかの判定
 	function push($player, $x, $y){
-      for ($d = -1; $d <= 1; $d++) {
-        for ($e = -1; $e <= 1; $e ++) {
-        	if($d!==0 and $e!==0){continue;};
+      for ($d = -1; $d <= 1; ++$d){
+        for ($e = -1; $e <= 1; ++$e) {
+        	if($d===0 and $e===0){	continue;}
     		if ($this->re_suu($player, $x, $y, $d, $e)!==0){
     		return false;
     		}
@@ -178,9 +192,9 @@ function play_game(){
     return true;
 	}
 	
-	//終了
+	//終了判定
 	function r_fin(){
-	if($this->kaisuu===65){
+	if($this->kaisuu===61){
 	$this->flag =true;
 	echo '---終了---'."\n";
 	
@@ -207,7 +221,6 @@ function play_game(){
 	echo '白：'.$white_j."\n";
 	echo "\n".$judge.''."\n\n";
 	$this->set();
-	exit();
     
     }else{
     $this->set();
@@ -217,6 +230,4 @@ function play_game(){
 
 $next = new setting;
 $next->name();
-$next->f();
-$next->set();
 ?>
